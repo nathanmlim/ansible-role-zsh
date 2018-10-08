@@ -27,8 +27,8 @@ ansible-galaxy install viasite-ansible.zsh --force
 title "Download playbook to $(pwd)/zsh.yml"
 curl https://raw.githubusercontent.com/nathanmlim/ansible-role-zsh/master/playbook.yml > $(pwd)/zsh.yml
 
-#title "Provision playbook for root"
-#sudo ansible-playbook -i "localhost," -c local $(pwd)/zsh.yml
+title "Provision playbook for root"
+sudo ansible-playbook -i "localhost," -c local $(pwd)/zsh.yml
 
 title "Provision playbook for $(whoami)"
 ansible-playbook -i "localhost," -c local $(pwd)/zsh.yml --extra-vars="zsh_user=$(whoami)"
