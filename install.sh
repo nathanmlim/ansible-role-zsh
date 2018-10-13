@@ -20,6 +20,8 @@ elif [[ $platform == 'Darwin' ]]; then
     sudo pip install ansible
 fi
 
+ title "Install HomeBrew"
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 title "Install viasite-ansible.zsh"
 ansible-galaxy install viasite-ansible.zsh --force
