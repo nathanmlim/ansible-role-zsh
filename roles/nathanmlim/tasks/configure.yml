@@ -27,7 +27,7 @@
     zsh_hotkeys: "{{ zsh_hotkeys }} + {{ zsh_hotkeys_extras }}"
 
 - name: Check antigen version
-  shell: "cat {{ zsh_antigen_path }}/antigen/VERSION | tr -d 'v'"
+  shell: "cat {{ zsh_antigen_path }}/VERSION | tr -d 'v'"
   register: zsh_register_antigen_version
   changed_when: false
   tags: configure
@@ -36,24 +36,33 @@
   set_fact:
     zsh_antigen_installed_version: "{{ zsh_register_antigen_version.stdout }}"
 
+# - name: Fix antigen FPATH
+#   command: echo 'export FPATH="~/.linuxbrew/share/zsh/functions:$FPATH" >> {{ zsh_antigen_path }}/antigen/init.zsh'
+
 - name: Write .zshrc config
   template:
     src: zshrc.j2
     dest: "{{ zsh_user_config }}"
-    owner: "{{ zsh_user }}"
-    group: "{{ zsh_user_group }}"
+    #owner: "{{ zsh_user }}"
+    #group: "{{ zsh_user_group }}"
     backup: yes
 
-- name: Set zsh as default shell
-  user:
-    name: "{{ zsh_user }}"
-    shell: /bin/zsh
-  become: true
+# - name: Get zsh path
+#   command: which zsh
+#   register: zsh_path
+#   changed_when: no
 
-- name: Add skip_global_compinit for disable early compinit call in Ubuntu
-  lineinfile:
-    regexp: "skip_global_compinit=1"
-    line: "skip_global_compinit=1"
-    dest: /etc/zsh/zshenv
-    state: present
-  when: ansible_distribution == 'Ubuntu'
+#- name: Set zsh as default shell
+  #command: echo 'export SHELL={{ zsh_path }}; [ -z "$ZSH_VERSION" ] && exec "$SHELL" -l' >> "/home/{{ zsh_user }}/.bash_profile"
+  #user:
+  #  name: "{{ zsh_user }}"
+  #  shell: "{{ zsh_path.stdout }}"
+    #shell: /bin/zsh
+
+# - name: Add skip_global_compinit for disable early compinit call in Ubuntu
+#   lineinfile:
+#     regexp: "skip_global_compinit=1"
+#     line: "skip_global_compinit=1"
+#     dest: /etc/zsh/zshenv
+#     state: present
+#   when: ansible_distribution == 'Ubuntu'

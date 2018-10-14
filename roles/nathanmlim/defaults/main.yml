@@ -4,21 +4,24 @@ zsh_user: "{{ ansible_user_id }}"
 
 # .zshrc config
 zsh_hist_stamps: yyyy-mm-dd
-zsh_share_history: no
 zsh_update_interval: 30 # set 0 for disable autoupdates
 zsh_editor: vim
 zsh_term: xterm-256color
 zsh_mc_solarized_skin: no
 
-zsh_path:
+zshenv_path:
+  - /home/{{ zsh_user }}/.linuxbrew/bin
+  - /home/{{ zsh_user }}/anaconda3/bin
+  - /home/{{ zsh_user }}/local/sbin
+  - /home/{{ zsh_user }}/local/bin
+  - /home/{{ zsh_user }}/sbin
+  - /home/{{ zsh_user }}/bin
   - /usr/local/sbin
   - /usr/local/bin
   - /usr/sbin
   - /usr/bin
   - /sbin
   - /bin
-  - /usr/games
-  - /usr/local/games
 
 fzf_widgets: ytet5uy4/fzf-widgets
 
@@ -26,30 +29,53 @@ zsh_antigen_version: master
 zsh_fzf_version: 0.17.4
 
 zsh_antigen_bundles:
-  - { name: command-not-found, when: "{{ ansible_os_family != 'Darwin' }}" } # too slow on OSX
-  - { name: brew, command: brew }
-  - fancy-ctrl-z
-  - git-extras
-  - gnu-utils
-  - { name: httpie, command: http }
-  - { name: go, command: go }
-  - { name: pip, command: pip }
-  - { name: systemd, command: systemctl }
-  - python
-  - { name: tmux, command: tmux }
-  - { name: vagrant, command: vagrant }
+  # Completion Plugins
+  - zsh-users/zsh-completions
+  #- chrissicool/zsh-bash
+  - robbyrussell/oh-my-zsh plugins/gitfast
+  - robbyrussell/oh-my-zsh plugins/git-extras
+  - robbyrussell/oh-my-zsh plugins/pip
+  - robbyrussell/oh-my-zsh plugins/python
+  # - robbyrussell/oh-my-zsh folder:plugins/brew
+  # #robbyrussell/oh-my-zsh folder:plugins/osx
+  # Color plugins
+  #- gretzky/auto-color-ls
+  - ael-code/zsh-colored-man-pages
+  # Git plugins
+  - denolfe/zsh-travis
+  - rutchkiwi/copyzshell
+  # iTerm plugins
+  - tysonwolker/iterm-tab-colors
+  - iam4x/zsh-iterm-touchbar
+  - zsh-users/zsh-autosuggestions
+  - zsh-users/zsh-history-substring-search
+  - popstas/zsh-command-time
+  - paulmelnikow/zsh-startup-timer
+  - trapd00r/zsh-syntax-highlighting-filetypes
+  #- { name: command-not-found, when: "{{ ansible_os_family != 'Darwin' }}" } # too slow on OSX
+  #- { name: brew, command: brew }
+  #- fancy-ctrl-z
+  #- git-extras
+  #- gnu-utils
+  #- { name: httpie, command: http }
+  #- { name: go, command: go }
+  #- { name: pip, command: pip }
+  #- { name: systemd, command: systemctl }
+  #- python
+  #- { name: tmux, command: tmux }
+  #- { name: vagrant, command: vagrant }
   - { name: viasite-ansible/zsh-ansible-server, command: ansible-deploy }
   - zsh_reload
 
   # on zsh 4.3.10 autosuggestions breaks multiline commands with \
-  - { name: zsh-users/zsh-autosuggestions, when: "{{ zsh_version | default(false) | version_compare('5.0', '>=') }}" }
-  - popstas/zsh-command-time
+  - zsh-users/zsh-autosuggestions
   - { name: unixorn/autoupdate-antigen.zshplugin, when: "{{ zsh_update_interval > 0 }}" }
   - urbainvaes/fzf-marks # replaces jump plugin, mark, jump and Ctrl+G
   - "{{ fzf_widgets }}"
+  - zdharma/fast-syntax-highlighting
   # must be last, don't work on zsh < 4.3.17
-  #- { name: zsh-users/zsh-syntax-highlighting, when: "{{ zsh_version | default(false) | version_compare('4.3.17', '>=') }}" }
-  - { name: zdharma/fast-syntax-highlighting, when: "{{ zsh_version | default(false) | version_compare('4.3.17', '>=') }}" }
+  #- { name: zsh-users/zsh-syntax-highlighting, when: "{{ zsh_version | default(false) is version_compare('4.3.17', '>=') }}" }
+  - { name: , when: "{{ zsh_version is version_compare('4.3.17', '>=') }}" }
 
 zsh_antigen_bundles_extras: []
 
@@ -87,16 +113,6 @@ zsh_hotkeys:
   - { hotkey: '^@ghc',  action: fzf-github-close-issue,      bundle: "{{ fzf_widgets }}" }
   - { hotkey: '^@ghco', action: fzf-github-comment-issue,    bundle: "{{ fzf_widgets }}" }
 
-  # fzf-widgets: Docker
-  - { hotkey: '^@d',   action: fzf-select-docker-widget,     bundle: "{{ fzf_widgets }}" }
-  - { hotkey: '^@dk',  action: fzf-docker-kill-containers,   bundle: "{{ fzf_widgets }}" }
-  - { hotkey: '^@dl',  action: fzf-docker-logs-container,    bundle: "{{ fzf_widgets }}" }
-  - { hotkey: '^@dr',  action: fzf-docker-remove-containers, bundle: "{{ fzf_widgets }}" }
-  - { hotkey: '^@dri', action: fzf-docker-remove-images,     bundle: "{{ fzf_widgets }}" }
-  - { hotkey: '^@drv', action: fzf-docker-remove-volumes,    bundle: "{{ fzf_widgets }}" }
-  - { hotkey: '^@dsa', action: fzf-docker-start-containers,  bundle: "{{ fzf_widgets }}" }
-  - { hotkey: '^@dso', action: fzf-docker-stop-containers,   bundle: "{{ fzf_widgets }}" }
-
   # autosuggestions
   - { hotkey: '{{ zsh_autosuggestions_bind_key }}',   action: autosuggest-accept, bundle: zsh-users/zsh-autosuggestions }
   - { hotkey: '{{ zsh_autosuggestions_bind_key_2 }}', action: autosuggest-accept, bundle: zsh-users/zsh-autosuggestions }
@@ -120,6 +136,7 @@ zsh_command_time_echo: ""
 
 # powerlevel9k
 zsh_powerlevel9k_left_prompt:
+  - anaconda
   - context
   - dir
 
@@ -136,12 +153,16 @@ zsh_powerlevel_custom_elements:
     background: "248"
     foreground: "000"
 
+zsh_powerlevel9k_color_scheme: "dark"
 zsh_powerlevel9k_hide_host_on_local: yes
 zsh_powerlevel9k_always_show_context: no # hide hostname and username from prompt on local machine
 zsh_powerlevel9k_always_show_user: no # hide username from prompt on local machine
-zsh_powerlevel9k_prompt_on_newline: no
+zsh_powerlevel9k_prompt_on_newline: true
+zsh_powerlevel9k_prompt_add_newline: true
+zsh_powerlevel9k_shorten_strategy: "truncate_from_right"
 zsh_powerlevel9k_shorten_dir_length: 3
 zsh_powerlevel9k_status_verbose: 0
+zsh_powerlevel9k_status_ok_in_non_verbose: true
 
 # dir (context) colors
 zsh_powerlevel9k_context_default_foreground: "255" # white

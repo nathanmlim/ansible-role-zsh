@@ -1,7 +1,8 @@
 ---
 zsh_user_group: "{% if ansible_os_family == 'Darwin' %}staff{% else %}{{ zsh_user }}{% endif %}"
-zsh_antigen_path: "~{{ zsh_user }}/.antigen"
-zsh_user_config: "~{{ zsh_user }}/.zshrc"
+zsh_antigen_path: "/home/{{ zsh_user }}/.antigen"
+zsh_user_config: "/home/{{ zsh_user }}/.zshrc"
+zsh_path: "/home/{{ zsh_user }}/.linuxbrew/bin/zsh"
 
 zsh_fzf_os: linux
 zsh_fzf_arch: "{% if '64' in ansible_architecture %}amd64{% else %}386{% endif %}"
