@@ -36,10 +36,10 @@
     creates: /home/{{ zsh_user }}/local/bin/fzf
   when: zsh_register_fzf_command.rc == 1
 
-# - name: Set directory permissions
-#   file:
-#     name: "{{ zsh_antigen_path }}"
-#     owner: "{{ zsh_user }}"
-#     #group: "{{ zsh_user_group }}"
-#     recurse: yes
-#   changed_when: false
+# - name: Install Homebrew packages
+
+# -name: Install linuxbrew
+  #export HOMEBREW_BUILD_FROM_SOURCE=1
+  #module load gnu/4.9.2
+
+# - name: Install Ruby Gems
