@@ -7,9 +7,9 @@ zsh_hist_stamps: yyyy-mm-dd
 zsh_update_interval: 30 # set 0 for disable autoupdates
 zsh_editor: vim
 zsh_term: xterm-256color
-zsh_mc_solarized_skin: no
 
 zshenv_path:
+  - /home/{{ zsh_user }}/.linuxbrew/sbin
   - /home/{{ zsh_user }}/.linuxbrew/bin
   - /home/{{ zsh_user }}/anaconda3/bin
   - /home/{{ zsh_user }}/local/sbin
