@@ -45,8 +45,8 @@ zsh_antigen_bundles:
   - denolfe/zsh-travis
   - rutchkiwi/copyzshell
   # iTerm plugins
-  - tysonwolker/iterm-tab-colors
-  - iam4x/zsh-iterm-touchbar
+  #- tysonwolker/iterm-tab-colors
+  #- iam4x/zsh-iterm-touchbar
   - zsh-users/zsh-autosuggestions
   - zsh-users/zsh-history-substring-search
   - popstas/zsh-command-time

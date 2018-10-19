@@ -1,0 +1,187 @@
+# zsh version: {{ zsh_version }}
+# antigen version: {{ zsh_antigen_installed_version }}
+
+export SHELL="$HOME/.linuxbrew/bin/zsh"
+[ -z "$ZSH_VERSION" ] && exec "$SHELL" -l
+
+export TERM="{{ zsh_term }}"
+export EDITOR="{{ zsh_editor }}"
+export PATH="{{ zshenv_path | join(":") }}"
+
+fpath=("$HOME/.linuxbrew/share/zsh/functions" $fpath)
+export FPATH="$FPATH"
+
+# Save history so we get auto suggestions
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=100000
+HIST_STAMPS="{{ zsh_hist_stamps }}"
+UPDATE_ZSH_DAYS="{{ zsh_update_interval }}"
+COMPLETION_WAITING_DOTS="true"
+
+# Options
+setopt auto_cd # cd by typing directory name if it's not a command
+setopt auto_list # automatically list choices on ambiguous completion
+setopt auto_menu # automatically use menu completion
+setopt always_to_end # move cursor to end if word had one match
+setopt hist_ignore_all_dups # remove older duplicate entries from history
+setopt hist_reduce_blanks # remove superfluous blanks from history items
+setopt inc_append_history # save history entries as soon as they are entered
+setopt share_history # share history between different instances
+setopt correct_all # autocorrect commands
+setopt interactive_comments # allow comments in interactive shells
+# Improve autocompletion style
+zstyle ':completion:*' menu select # select completions with arrow keys
+zstyle ':completion:*' group-name '' # group results by category
+zstyle ':completion:::::' completer _expand _complete _ignored _approximate # enable approximate matches for completion
+
+
+# Source ZSH Plugins
+ADOTDIR="$HOME/.antigen"
+ANTIGEN_BUNDLES="$ADOTDIR/bundles"
+ANTIGEN_PLUGIN_UPDATE_DAYS=30
+ANTIGEN_SYSTEM_UPDATE_DAYS=30
+ANTIGEN_CAHCE="$ADOTDIR/init.zsh"
+ANTIGEN_COMPDUMP="$ADOTDIR/.zcompdump"
+
+source {{ zsh_antigen_path }}/antigen.zsh
+# antigen use oh-my-zsh
+
+
+{% set bundles_enabled = [] %}
+
+{% for bundle in zsh_antigen_bundles -%}
+    {%- if bundle is mapping -%}
+        {% set valid = true -%}
+        {% set command_not_exists = [] -%}
+
+        {%- if bundle.when is defined and not bundle.when -%}
+            {% set valid = false -%}
+        {% endif -%}
+
+        {% if bundle.command is defined -%}
+            {% for cmd in zsh_register_commands_exists.results -%}
+                {% if cmd.cmd is defined and cmd.rc != 0 and cmd.item.command == bundle.command -%}
+                    {% if command_not_exists.append(1) %}{% endif -%}
+                {% endif -%}
+            {% endfor -%}
+        {% endif -%}
+
+        {% if valid and not command_not_exists %}
+            {%- if 'zsh-syntax-highlighting' in bundle.name or 'fast-syntax-highlighting' in bundle.name -%}
+# will fixed in zsh-autosuggestion v0.4 - https://github.com/zsh-users/zsh-autosuggestions/pull/218
+if (( ZSHRC_LOAD_ONCE++ == 0 )); then
+    antigen bundle {{ bundle.name }}
+fi
+{% else -%}
+{% if bundles_enabled.append(bundle.name) %}{% endif -%}
+antigen bundle {{ bundle.name }}
+{% endif -%}
+        {% endif -%}
+    {%- else -%}
+{% if bundles_enabled.append(bundle) %}{% endif -%}
+antigen bundle {{ bundle }}
+{% endif %}
+{% endfor %}
+
+{% if zsh_antigen_installed_version is version_compare(2.0, '>=') %}
+POWERLEVEL9K_INSTALLATION_PATH=$ANTIGEN_BUNDLES/bhilburn/powerlevel9k/powerlevel9k.zsh-theme
+{% elif zsh_version is version_compare('5.0.8', '<') %}
+POWERLEVEL9K_INSTALLATION_PATH={{ zsh_antigen_path }}/repos/https-COLON--SLASH--SLASH-github.com-SLASH-bhilburn-SLASH-powerlevel9k.git
+{% endif %}
+
+antigen theme {{ zsh_antigen_theme }}
+
+antigen apply
+
+###
+
+
+autoload -Uz copy-earlier-word
+zle -N copy-earlier-word
+
+# hotkeys (OFFENDING CODE BLOCK)
+# {% for hotkey in zsh_hotkeys %}
+# {% if hotkey.hotkey != '' and (hotkey.bundle is not defined or hotkey.bundle in bundles_enabled) %}
+# bindkey '{{ hotkey.hotkey }}' {{ hotkey.action }}
+# {% endif %}
+# {% endfor %}
+
+# fzf
+export FZF_TMUX=0
+export FZF_DEFAULT_OPTS="{{ zsh_fzf_default_opts }}"
+
+# fzf-widgets: fzf-change-reset-dir
+{% if zsh_version is version_compare('5.0', '>=') -%}
+autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
+add-zsh-hook chpwd chpwd_recent_dirs
+{% endif %}
+declare -p FZF_WIDGETS_OPTS > /dev/null 2>&1 && FZF_WIDGETS_OPTS[insert-history]="{{ zsh_fzf_ctrl_r_opts }}"
+declare -p FZF_WIDGET_OPTS > /dev/null 2>&1 && FZF_WIDGET_OPTS[insert-history]="{{ zsh_fzf_ctrl_r_opts }}"
+
+# zsh-autosuggestions
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE={{ zsh_autosuggestions_max_length }}
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=240" # gray highlight
+
+# powerlevel9k
+POWERLEVEL9K_COLOR_SCHEME={{ zsh_powerlevel9k_color_scheme }}
+
+POWERLEVEL9K_SHORTEN_STRATEGY={{ zsh_powerlevel9k_shorten_strategy }}
+POWERLEVEL9K_SHORTEN_DIR_LENGTH={{ zsh_powerlevel9k_shorten_dir_length }}
+POWERLEVEL9K_STATUS_VERBOSE={{ zsh_powerlevel9k_status_verbose }}
+POWERLEVEL9K_STATUS_OK_IN_NON_VERBOSE={{ zsh_powerlevel9k_status_ok_in_non_verbose }}
+
+POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=({{ zsh_powerlevel9k_left_prompt | join(" ") }})
+POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=({{ zsh_powerlevel9k_right_prompt | join(" ") }})
+{% if zsh_powerlevel9k_hide_host_on_local %}DEFAULT_USER=$USER{% endif %}
+
+POWERLEVEL9K_ALWAYS_SHOW_CONTEXT={{ zsh_powerlevel9k_always_show_context_bool }}
+POWERLEVEL9K_ALWAYS_SHOW_USER={{ zsh_powerlevel9k_always_show_user_bool }}
+
+{% if zsh_powerlevel_custom_elements is defined and zsh_powerlevel_custom_elements %}
+{% for element in zsh_powerlevel_custom_elements %}
+{% set prefix = "POWERLEVEL9K_CUSTOM_" + element.name | upper %}
+{{ prefix }}="{{ element.command }}"
+{{ prefix }}_BACKGROUND="{{ element.background }}"
+{{ prefix }}_FOREGROUND="{{ element.foreground }}"
+{% endfor %}
+{% endif %}
+
+# https://github.com/bhilburn/powerlevel9k#command_execution_time
+POWERLEVEL9K_COMMAND_EXECUTION_TIME_THRESHOLD="{{ zsh_command_time_min_seconds }}"
+
+POWERLEVEL9K_PROMPT_ON_NEWLINE={{ zsh_powerlevel9k_prompt_on_newline_bool }}
+POWERLEVEL9K_PROMPT_ADD_NEWLINE={{ zsh_powerlevel9k_prompt_add_newline }}
+POWERLEVEL9K_MULTILINE_FIRST_PROMPT_PREFIX=''
+POWERLEVEL9K_MULTILINE_LAST_PROMPT_PREFIX="↳ "
+POWERLEVEL9K_PYTHON_ICON=''
+# POWERLEVEL9K_MODE='nerdfont-complete'
+
+# POWERLEVEL9K_CONTEXT_DEFAULT_FOREGROUND="{{ zsh_powerlevel9k_context_default_foreground }}"
+# POWERLEVEL9K_CONTEXT_DEFAULT_BACKGROUND="{{ zsh_powerlevel9k_context_default_background }}"
+# POWERLEVEL9K_CONTEXT_ROOT_FOREGROUND="{{ zsh_powerlevel9k_context_root_foreground }}"
+# POWERLEVEL9K_CONTEXT_ROOT_BACKGROUND="{{ zsh_powerlevel9k_context_root_background }}"
+
+# POWERLEVEL9K_DIR_DEFAULT_FOREGROUND="{{ zsh_powerlevel9k_dir_foreground }}"
+# POWERLEVEL9K_DIR_DEFAULT_BACKGROUND="{{ zsh_powerlevel9k_dir_background }}"
+# POWERLEVEL9K_DIR_HOME_FOREGROUND="{{ zsh_powerlevel9k_dir_foreground }}"
+# POWERLEVEL9K_DIR_HOME_BACKGROUND="{{ zsh_powerlevel9k_dir_background }}"
+# POWERLEVEL9K_DIR_HOME_SUBFOLDER_FOREGROUND="{{ zsh_powerlevel9k_dir_foreground }}"
+# POWERLEVEL9K_DIR_HOME_SUBFOLDER_BACKGROUND="{{ zsh_powerlevel9k_dir_background }}"
+
+# POWERLEVEL9K_VCS_CLEAN_BACKGROUND="{{ zsh_powerlevel9k_vcs_clean_background }}"
+# POWERLEVEL9K_VCS_MODIFIED_BACKGROUND="{{ zsh_powerlevel9k_vcs_modified_background }}"
+# POWERLEVEL9K_VCS_UNTRACKED_BACKGROUND="{{ zsh_powerlevel9k_vcs_untracked_background }}"
+# POWERLEVEL9K_VCS_CLEAN_FOREGROUND="{{ zsh_powerlevel9k_vcs_foreground }}"
+# POWERLEVEL9K_VCS_MODIFIED_FOREGROUND="{{ zsh_powerlevel9k_vcs_foreground }}"
+# POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND="{{ zsh_powerlevel9k_vcs_foreground }}"
+
+# POWERLEVEL9K_COMMAND_EXECUTION_TIME_FOREGROUND="{{ zsh_powerlevel9k_command_execution_time_foreground }}"
+# POWERLEVEL9K_COMMAND_EXECUTION_TIME_BACKGROUND="{{ zsh_powerlevel9k_command_execution_time_background }}"
+
+
+. $HOME/anaconda3/etc/profile.d/conda.sh
+conda activate
+
+# user configs
+[[ -r /etc/zsh/zshrc.local ]] && source /etc/zsh/zshrc.local
+[[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"

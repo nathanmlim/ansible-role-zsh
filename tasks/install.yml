@@ -1,0 +1,84 @@
+---
+
+- name: Install zsh, git, wget
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - git
+    - wget
+    - build-essential
+    - curl
+    - file
+  # brew don't work from root user on macOS
+  when: not (zsh_user == 'root' and ansible_os_family == 'Darwin')
+
+- name: Clone Linuxbrew
+  git:
+    repo: https://github.com/Linuxbrew/brew.git
+    dest: /home/{{ zsh_user }}/.linuxbrew
+    force: yes
+
+- name: Add Linuxbrew to path
+  shell: |
+    test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$HOME/.linuxbrew/sbin:$PATH"
+    test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
+    test -r ~/.bash_profile && echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.bash_profile
+    echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.profile
+
+- name: Updating environment
+  become_user: "{{ zsh_user }}"
+  shell: '. ~/.bashrc'
+
+#- name: Install Linuxbrew
+  # become_user: nathanlim
+  # shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+
+- name: Brew install ZSH
+  become_user: "{{ zsh_user }}"
+  shell: |
+    "{{ brew_bin_path }}"/brew install zsh
+    sudo chown -R $(whoami) /home/vagrant/.linuxbrew
+
+- name: Clone antigen {{ zsh_antigen_version }}
+  git:
+    repo: https://github.com/zsh-users/antigen.git
+    dest: "{{ zsh_antigen_path }}"
+    version: "{{ zsh_antigen_version }}"
+    force: yes
+  become: yes
+  become_user: "{{ zsh_user }}"
+  register: zsh_register_antigen_clone
+  ignore_errors: yes
+
+- name: Check fzf installed
+  command: which fzf
+  changed_when: false
+  failed_when: false
+  register: zsh_register_fzf_command
+
+- name: Ensure directory exists
+  file:
+    path: /home/{{ zsh_user }}/local
+    state: directory
+
+- name: Ensure directory exists
+  file:
+    path: /home/{{ zsh_user }}/local/bin
+    state: directory
+
+- name: Download fzf
+  unarchive:
+    src: "{{ zsh_fzf_url }}"
+    dest: /home/{{ zsh_user }}/local/bin
+    remote_src: yes
+    creates: /home/{{ zsh_user }}/local/bin/fzf
+  when: zsh_register_fzf_command.rc == 1
+
+# - name: Install Homebrew packages
+
+# -name: Install linuxbrew
+  #export HOMEBREW_BUILD_FROM_SOURCE=1
+  #module load gnu/4.9.2
+
+# - name: Install Ruby Gems

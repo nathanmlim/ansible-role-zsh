@@ -1,11 +1,18 @@
 ---
+- name: Grab host OS distribution
+  hosts: all
+  tasks:
+    - name: Classify hosts depending on their OS distribution
+      group_by:
+        key: os_{{ ansible_facts['distribution'] }}
+
 - hosts: all
-  remote_user: limn1
+  become_user: "{{ zsh_user }}"
   vars:
     # your extra bundles here
-    #zsh_antigen_bundles_extras:
+    zsh_antigen_bundles_extras:
     # your variables here
-    #zsh_autosuggestions_bind_key: "^U"
+    zsh_autosuggestions_bind_key: "^U"
   roles:
     - role: 'roles/nathanmlim'
     #- viasite-ansible.zsh
