@@ -1,6 +1,7 @@
 # zsh version: {{ zsh_version }}
 # antigen version: {{ zsh_antigen_installed_version }}
 
+
 export SHELL="$HOME/.linuxbrew/bin/zsh"
 [ -z "$ZSH_VERSION" ] && exec "$SHELL" -l
 
@@ -43,7 +44,7 @@ ANTIGEN_SYSTEM_UPDATE_DAYS=30
 ANTIGEN_CAHCE="$ADOTDIR/init.zsh"
 ANTIGEN_COMPDUMP="$ADOTDIR/.zcompdump"
 
-source {{ zsh_antigen_path }}/antigen.zsh
+source "{{ zsh_antigen_path }}"/antigen.zsh
 # antigen use oh-my-zsh
 
 
@@ -89,38 +90,12 @@ POWERLEVEL9K_INSTALLATION_PATH=$ANTIGEN_BUNDLES/bhilburn/powerlevel9k/powerlevel
 POWERLEVEL9K_INSTALLATION_PATH={{ zsh_antigen_path }}/repos/https-COLON--SLASH--SLASH-github.com-SLASH-bhilburn-SLASH-powerlevel9k.git
 {% endif %}
 
-antigen theme {{ zsh_antigen_theme }}
-
-antigen apply
-
-###
 
 
 autoload -Uz copy-earlier-word
 zle -N copy-earlier-word
 
-# hotkeys (OFFENDING CODE BLOCK)
-# {% for hotkey in zsh_hotkeys %}
-# {% if hotkey.hotkey != '' and (hotkey.bundle is not defined or hotkey.bundle in bundles_enabled) %}
-# bindkey '{{ hotkey.hotkey }}' {{ hotkey.action }}
-# {% endif %}
-# {% endfor %}
 
-# fzf
-export FZF_TMUX=0
-export FZF_DEFAULT_OPTS="{{ zsh_fzf_default_opts }}"
-
-# fzf-widgets: fzf-change-reset-dir
-{% if zsh_version is version_compare('5.0', '>=') -%}
-autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
-add-zsh-hook chpwd chpwd_recent_dirs
-{% endif %}
-declare -p FZF_WIDGETS_OPTS > /dev/null 2>&1 && FZF_WIDGETS_OPTS[insert-history]="{{ zsh_fzf_ctrl_r_opts }}"
-declare -p FZF_WIDGET_OPTS > /dev/null 2>&1 && FZF_WIDGET_OPTS[insert-history]="{{ zsh_fzf_ctrl_r_opts }}"
-
-# zsh-autosuggestions
-ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE={{ zsh_autosuggestions_max_length }}
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=240" # gray highlight
 
 # powerlevel9k
 POWERLEVEL9K_COLOR_SCHEME={{ zsh_powerlevel9k_color_scheme }}
@@ -130,12 +105,8 @@ POWERLEVEL9K_SHORTEN_DIR_LENGTH={{ zsh_powerlevel9k_shorten_dir_length }}
 POWERLEVEL9K_STATUS_VERBOSE={{ zsh_powerlevel9k_status_verbose }}
 POWERLEVEL9K_STATUS_OK_IN_NON_VERBOSE={{ zsh_powerlevel9k_status_ok_in_non_verbose }}
 
-POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=({{ zsh_powerlevel9k_left_prompt | join(" ") }})
-POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=({{ zsh_powerlevel9k_right_prompt | join(" ") }})
-{% if zsh_powerlevel9k_hide_host_on_local %}DEFAULT_USER=$USER{% endif %}
 
-POWERLEVEL9K_ALWAYS_SHOW_CONTEXT={{ zsh_powerlevel9k_always_show_context_bool }}
-POWERLEVEL9K_ALWAYS_SHOW_USER={{ zsh_powerlevel9k_always_show_user_bool }}
+
 
 {% if zsh_powerlevel_custom_elements is defined and zsh_powerlevel_custom_elements %}
 {% for element in zsh_powerlevel_custom_elements %}
@@ -149,35 +120,44 @@ POWERLEVEL9K_ALWAYS_SHOW_USER={{ zsh_powerlevel9k_always_show_user_bool }}
 # https://github.com/bhilburn/powerlevel9k#command_execution_time
 POWERLEVEL9K_COMMAND_EXECUTION_TIME_THRESHOLD="{{ zsh_command_time_min_seconds }}"
 
-POWERLEVEL9K_PROMPT_ON_NEWLINE={{ zsh_powerlevel9k_prompt_on_newline_bool }}
-POWERLEVEL9K_PROMPT_ADD_NEWLINE={{ zsh_powerlevel9k_prompt_add_newline }}
+# Powerlevel9K prompt config
+DEFAULT_USER="$USER"
+POWERLEVEL9K_MODE='nerdfont-complete'
+POWERLEVEL9K_COLOR_SCHEME='dark'
+POWERLEVEL9K_LEFT_SEGMENT_SEPARATOR="\uE0B0"
+POWERLEVEL9K_STATUS_VERBOSE=false
+POWERLEVEL9K_STATUS_OK_IN_NON_VERBOSE=true
+POWERLEVEL9K_PROMPT_ON_NEWLINE=true
+POWERLEVEL9K_PROMPT_ADD_NEWLINE=true
 POWERLEVEL9K_MULTILINE_FIRST_PROMPT_PREFIX=''
 POWERLEVEL9K_MULTILINE_LAST_PROMPT_PREFIX="↳ "
+POWERLEVEL9K_SHORTEN_DIR_LENGTH=2
+POWERLEVEL9K_SHORTEN_STRATEGY="truncate_from_right"
 POWERLEVEL9K_PYTHON_ICON=''
-# POWERLEVEL9K_MODE='nerdfont-complete'
+POWERLEVEL9K_OS_ICON_BACKGROUND="black"
+POWERLEVEL9K_OS_ICON_FOREGROUND="white"
+POWERLEVEL9K_USER_ICON="\uF415" # 
+POWERLEVEL9K_ROOT_ICON="#"
+POWERLEVEL9K_SUDO_ICON=$'\uF09C' # 
+POWERLEVEL9K_TIME_FORMAT="%D{\uf017 %H:%M \uf073 %m.%d}"
 
-# POWERLEVEL9K_CONTEXT_DEFAULT_FOREGROUND="{{ zsh_powerlevel9k_context_default_foreground }}"
-# POWERLEVEL9K_CONTEXT_DEFAULT_BACKGROUND="{{ zsh_powerlevel9k_context_default_background }}"
-# POWERLEVEL9K_CONTEXT_ROOT_FOREGROUND="{{ zsh_powerlevel9k_context_root_foreground }}"
-# POWERLEVEL9K_CONTEXT_ROOT_BACKGROUND="{{ zsh_powerlevel9k_context_root_background }}"
+POWERLEVEL9K_BATTERY_CHARGING='yellow'
+POWERLEVEL9K_BATTERY_CHARGED='green'
+POWERLEVEL9K_BATTERY_DISCONNECTED='$DEFAULT_COLOR'
+POWERLEVEL9K_BATTERY_LOW_THRESHOLD='10'
+POWERLEVEL9K_BATTERY_LOW_COLOR='red'
+POWERLEVEL9K_BATTERY_ICON='\uf1e6 '
+POWERLEVEL9K_LEFT_SEGMENT_SEPARATOR="\uE0B0"
+#POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(os_icon ssh root_indicator context dir vcs)
+#POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status command_execution_time time anaconda)
+POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(os_icon battery context dir vcs)
+POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(command_execution_time time load)
 
-# POWERLEVEL9K_DIR_DEFAULT_FOREGROUND="{{ zsh_powerlevel9k_dir_foreground }}"
-# POWERLEVEL9K_DIR_DEFAULT_BACKGROUND="{{ zsh_powerlevel9k_dir_background }}"
-# POWERLEVEL9K_DIR_HOME_FOREGROUND="{{ zsh_powerlevel9k_dir_foreground }}"
-# POWERLEVEL9K_DIR_HOME_BACKGROUND="{{ zsh_powerlevel9k_dir_background }}"
-# POWERLEVEL9K_DIR_HOME_SUBFOLDER_FOREGROUND="{{ zsh_powerlevel9k_dir_foreground }}"
-# POWERLEVEL9K_DIR_HOME_SUBFOLDER_BACKGROUND="{{ zsh_powerlevel9k_dir_background }}"
+antigen theme {{ zsh_antigen_theme }}
 
-# POWERLEVEL9K_VCS_CLEAN_BACKGROUND="{{ zsh_powerlevel9k_vcs_clean_background }}"
-# POWERLEVEL9K_VCS_MODIFIED_BACKGROUND="{{ zsh_powerlevel9k_vcs_modified_background }}"
-# POWERLEVEL9K_VCS_UNTRACKED_BACKGROUND="{{ zsh_powerlevel9k_vcs_untracked_background }}"
-# POWERLEVEL9K_VCS_CLEAN_FOREGROUND="{{ zsh_powerlevel9k_vcs_foreground }}"
-# POWERLEVEL9K_VCS_MODIFIED_FOREGROUND="{{ zsh_powerlevel9k_vcs_foreground }}"
-# POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND="{{ zsh_powerlevel9k_vcs_foreground }}"
+antigen apply
 
-# POWERLEVEL9K_COMMAND_EXECUTION_TIME_FOREGROUND="{{ zsh_powerlevel9k_command_execution_time_foreground }}"
-# POWERLEVEL9K_COMMAND_EXECUTION_TIME_BACKGROUND="{{ zsh_powerlevel9k_command_execution_time_background }}"
-
+##
 
 . $HOME/anaconda3/etc/profile.d/conda.sh
 conda activate
