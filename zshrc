@@ -1,51 +1,23 @@
-#!/bin/zsh
+# zsh version: 5.1.1
+# antigen version: 2.2.2
 
-# Path to your oh-my-zsh installation.
-export ZSH="/Users/nathanlim/Library/Caches/antibody/https-COLON--SLASH--SLASH-github.com-SLASH-robbyrussell-SLASH-oh-my-zsh"
+export TERM="xterm-256color"
+export EDITOR="vim"
+export PATH="/home/nathanlim/.linuxbrew/sbin:/home/nathanlim/.linuxbrew/bin:/home/nathanlim/anaconda3/bin:/home/nathanlim/local/sbin:/home/nathanlim/local/bin:/home/nathanlim/sbin:/home/nathanlim/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-# Add commonly used folders to $PATH
-export MANPATH="/usr/local/man:$MANPATH"
-#export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-export OE_LICENSE="/Users/nathanlim/licenses/oe_license.txt"
+#fpath=("$HOME/.linuxbrew/share/zsh/functions" $fpath)
+#export FPATH="$FPATH"
 
-# Open new tabs in same directory
-if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
-  function chpwd {
-    printf '\e]7;%s\a' "file://$HOSTNAME${PWD// /%20}"
-  }
-  chpwd
-fi
+autoload -Uz compinit && compinit
+autoload -Uz copy-earlier-word
+zle -N copy-earlier-word
 
-if [[ "$TERM_PROGRAM" == "nuclide" ]]; then
-  export EDITOR='atom --wait'
-else
-  export EDITOR=vim # your favorite editor here
-fi
-
-
-#export DEFAULT_USER="$USER"
-#prompt_context(){}
-
-# Homebrew completions
-if type brew &>/dev/null; then
-  FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
-fi
-
-# Enable autocompletions
-autoload -Uz compinit
-typeset -i updated_at=$(date +'%j' -r ~/.zcompdump 2>/dev/null || stat -f '%Sm' -t '%j' ~/.zcompdump 2>/dev/null)
-if [ $(date +'%j') != $updated_at ]; then
-  compinit -i
-else
-  compinit -C -i
-fi
-zmodload -i zsh/complist
-
-autoload -U compinit && compinit
 # Save history so we get auto suggestions
-HISTFILE=$HOME/.zsh_history
+HISTFILE="$HOME/.zsh_history"
 HISTSIZE=100000
-SAVEHIST=$HISTSIZE
+HIST_STAMPS="yyyy-mm-dd"
+UPDATE_ZSH_DAYS="30"
+COMPLETION_WAITING_DOTS="true"
 
 # Options
 setopt auto_cd # cd by typing directory name if it's not a command
@@ -56,6 +28,8 @@ setopt hist_ignore_all_dups # remove older duplicate entries from history
 setopt hist_reduce_blanks # remove superfluous blanks from history items
 setopt inc_append_history # save history entries as soon as they are entered
 setopt share_history # share history between different instances
+
+#setopt correct_all # autocorrect commands
 setopt interactive_comments # allow comments in interactive shells
 
 # Improve autocompletion style
@@ -63,28 +37,82 @@ zstyle ':completion:*' menu select # select completions with arrow keys
 zstyle ':completion:*' group-name '' # group results by category
 zstyle ':completion:::::' completer _expand _complete _ignored _approximate # enable approximate matches for completion
 
-# Custom Options
-# # Verbose completion results
+# Verbose completion results
 zstyle ':completion:*' verbose true
-# Keep directories and files separated
+
+# Keep directories and files seperated
 zstyle ':completion:*' list-dirs-first true
 
 # Source ZSH Plugins
-source $(dirname $(gem which colorls))/tab_complete.sh
-source "${HOME}/.iterm2_shell_integration.zsh"
+ADOTDIR="$HOME/.antigen"
+ANTIGEN_BUNDLES="$ADOTDIR/bundles"
+ANTIGEN_PLUGIN_UPDATE_DAYS=30
+ANTIGEN_SYSTEM_UPDATE_DAYS=30
+ANTIGEN_CAHCE="$ADOTDIR/init.zsh"
+ANTIGEN_COMPDUMP="$ADOTDIR/.zcompdump"
 
-# Load antibody plugin manager
-source <(antibody init)
+source /home/nathanlim/.antigen/antigen.zsh
 
-antibody bundle < ~/.zsh_plugins.txt
+antigen bundle zsh-users/zsh-completions
+antigen bundle robbyrussell/oh-my-zsh plugins/gitfast
+antigen bundle robbyrussell/oh-my-zsh plugins/git-extras
+antigen bundle robbyrussell/oh-my-zsh plugins/pip
+antigen bundle robbyrussell/oh-my-zsh plugins/python
+antigen bundle ael-code/zsh-colored-man-pages
+antigen bundle denolfe/zsh-travis
+antigen bundle rutchkiwi/copyzshell
+antigen bundle gretzky/auto-color-ls
+#antigen bundle chrissicool/zsh-bash
+antigen bundle zsh-users/zsh-autosuggestions
+antigen bundle zsh-users/zsh-history-substring-search
+antigen bundle popstas/zsh-command-time
+antigen bundle paulmelnikow/zsh-startup-timer
+antigen bundle trapd00r/zsh-syntax-highlighting-filetypes
+antigen bundle zsh-users/zsh-autosuggestions
+antigen bundle unixorn/autoupdate-antigen.zshplugin
+antigen bundle urbainvaes/fzf-marks
+antigen bundle ytet5uy4/fzf-widgets
+antigen bundle zdharma/fast-syntax-highlighting
 
-# Keybindings
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
-bindkey "[D" backward-word
-bindkey "[C" forward-word
-bindkey "^[a" beginning-of-line
-bindkey "^[e" end-of-line
+
+
+# hotkeys
+bindkey '\e[1~' beginning-of-line
+bindkey '\e[4~' end-of-line
+bindkey '^@' fzf-select-widget
+bindkey '^@.' fzf-edit-dotfiles
+bindkey '^@c' fzf-change-directory
+bindkey '^@f' fzf-edit-files
+bindkey '^@k' fzf-kill-processes
+bindkey '^@s' fzf-exec-ssh
+bindkey '^\' fzf-change-recent-directory
+bindkey '^r' fzf-insert-history
+bindkey '^xf' fzf-insert-files
+bindkey '^xd' fzf-insert-directory
+bindkey '^@g' fzf-select-git-widget
+bindkey '^@ga' fzf-git-add-files
+bindkey '^@gc' fzf-git-change-repository
+bindkey '^@gco' fzf-git-checkout-branch
+bindkey '^@gd' fzf-git-delete-branches
+bindkey '^@gh' fzf-select-github-widget
+bindkey '^@ghi' fzf-github-show-issue
+bindkey '^@ghe' fzf-github-edit-issue
+bindkey '^@gho' fzf-github-open-issue
+
+# fzf
+export FZF_TMUX=0
+export FZF_DEFAULT_OPTS="--height 100% --reverse"
+
+# fzf-widgets: fzf-change-reset-dir
+declare -p FZF_WIDGETS_OPTS > /dev/null 2>&1 && FZF_WIDGETS_OPTS[insert-history]="--exact"
+declare -p FZF_WIDGET_OPTS > /dev/null 2>&1 && FZF_WIDGET_OPTS[insert-history]="--exact"
+
+# zsh-autosuggestions
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=15
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=240" # gray highlight
+
+# # powerlevel9k
+POWERLEVEL9K_INSTALLATION_PATH=$ANTIGEN_BUNDLES/bhilburn/powerlevel9k/powerlevel9k.zsh-theme
 
 # Powerlevel9K prompt config
 DEFAULT_USER="$USER"
@@ -107,41 +135,24 @@ POWERLEVEL9K_ROOT_ICON="#"
 POWERLEVEL9K_SUDO_ICON=$'\uF09C' # 
 POWERLEVEL9K_TIME_FORMAT="%D{\uf017 %H:%M \uf073 %m.%d}"
 
-POWERLEVEL9K_BATTERY_CHARGING='yellow'
-POWERLEVEL9K_BATTERY_CHARGED='green'
-POWERLEVEL9K_BATTERY_DISCONNECTED='$DEFAULT_COLOR'
-POWERLEVEL9K_BATTERY_LOW_THRESHOLD='10'
-POWERLEVEL9K_BATTERY_LOW_COLOR='red'
-POWERLEVEL9K_BATTERY_ICON='\uf1e6 '
 POWERLEVEL9K_LEFT_SEGMENT_SEPARATOR="\uE0B0"
-#POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(os_icon ssh root_indicator context dir vcs)
-#POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status command_execution_time time anaconda)
-POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(os_icon battery context dir vcs)
+POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(os_icon anaconda context dir vcs)
 POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(command_execution_time time load)
 
-antibody bundle bhilburn/powerlevel9k
 
-# File search functions
-function f() { find . -iname "*$1*" ${@:2} }
-function r() { grep "$1" ${@:2} -R . }
+antigen theme bhilburn/powerlevel9k powerlevel9k
 
-# Create a folder and move into it in one command
-function mkcd() { mkdir -p "$@" && cd "$_"; }
+antigen apply
 
 
-bindkey '^[[3~' delete-char
-bindkey '^[3;5~' delete-char
-
-# Set personal aliases, overriding those provided by oh-my-zsh libs,
-# plugins, and themes. Aliases can be placed here, though oh-my-zsh
-# users are encouraged to define aliases within the ZSH_CUSTOM folder.
-# For a full list of active aliases, run `alias`.
-. //anaconda/etc/profile.d/conda.sh
+. $HOME/anaconda3/etc/profile.d/conda.sh
 conda activate
 source ~/.bash_aliases
-alias cppcompile='c++ -std=c++11 -stdlib=libc++'
+alias git='g'
 alias lc='colorls -lA --sd'
 alias cls='colorls'
-export GITHUB_API_TOKEN="784f37e7806ac4b84a148d62b1a4348683f7234d"
-#[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-#export PATH="/usr/local/opt/ncurses/bin:$PATH"
+
+
+# user configs
+[[ -r /etc/zsh/zshrc.local ]] && source /etc/zsh/zshrc.local
+[[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
